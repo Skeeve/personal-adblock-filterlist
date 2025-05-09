@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Clean Up Linkedin Posts
 // @namespace    https://thevgergroup.com/
-// @version      1.2
+// @version      1.3
 // @description  Remove posts containing "Suggested" from the feed
 // @author       Patrick O'Leary
 // @match        https://www.linkedin.com/*
@@ -15,16 +15,23 @@ const HIDE = /^(?:Vorgeschlagen|Suggested|Anzeige)/;
 (function() {
     'use strict';
 
-    // Function to hide suggested posts
-    function hideSuggestedPosts() {
+    function hideStuff() {
+        hide(
+            'section.launchpad-v2', /^(?:Premium kostenlos)/
+        );
+        hide(
+            'div[data-id^="urn:li:activity:"]', /^(?:Vorgeschlagen|Suggested|Anzeige)/
+        );
+    }
+    // Function to hide stuff
+    function hide(selector, rex) {
         // Select all divs that have a data-id attribute starting with "urn:li:activity:"
-        const feedItems = document.querySelectorAll('div[data-id^="urn:li:activity:"]');
+        const feedItems = document.querySelectorAll(selector);
 
         feedItems.forEach(feedItem => {
-            // Check if any grandchild contains a span with the text "Suggested"
             feedItem.querySelectorAll('span').forEach(spanElement => {
                 let text = spanElement.textContent.trim();
-                if (text.match(HIDE)) {
+                if (text.match(rex)) {
                     // Instead of removing, hide the item by setting the display to none
                     feedItem.style.display = 'none';
                 }
@@ -33,10 +40,10 @@ const HIDE = /^(?:Vorgeschlagen|Suggested|Anzeige)/;
     }
 
     // Run the function initially
-    hideSuggestedPosts();
+    hideStuff();
 
     // Run the function when new posts are loaded (using a MutationObserver)
-    const observer = new MutationObserver(hideSuggestedPosts);
+    const observer = new MutationObserver(hideStuff);
     observer.observe(document.body, { childList: true, subtree: true });
 
 })();
